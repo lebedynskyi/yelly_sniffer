@@ -1,0 +1,6 @@
+App modes:
+ - single post mode
+ - single page mode
+ - site check
+
+Remember failed post?
