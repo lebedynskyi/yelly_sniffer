@@ -1,0 +1,18 @@
+general:
+  database: posts.db
+  fb_publish_delay: 5500 # seconds
+
+chat_gpt:
+  api_key: key
+
+xml_rpc:
+  rpc_url: url
+  rpc_user: user_name
+  rpc_password: password
+
+telegram:
+  tele_token: token
+  tele_channel: chanek_id
+
+facebook:
+  fb_page: fb_page_url
