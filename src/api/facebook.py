@@ -1,8 +1,8 @@
-import datetime
 import logging
 import os
 import random
 import time
+import uuid
 
 from selenium import webdriver
 from selenium.webdriver import Keys
@@ -26,6 +26,27 @@ intention = [
     "Читайте в комментариях.",
 ]
 
+intention_emoji = [
+    "Больше в первом комментарии 👇👇",
+    "Больше в комментарии 👇👇",
+    "Больше в комментариях 👇👇",
+    "Подробнее в первом комментарии 👇👇",
+    "Подробнее в комментарии 👇👇",
+    "Подробнее в комментариях 👇👇",
+    "Читайте в первом комментарии 👇👇",
+    "Читайте в комментарии 👇👇",
+    "Читайте в комментариях 👇👇",
+    "Больше в первом комментарии 👇",
+    "Больше в комментарии 👇",
+    "Больше в комментариях 👇",
+    "Подробнее в первом комментарии 👇",
+    "Подробнее в комментарии 👇",
+    "Подробнее в комментариях 👇",
+    "Читайте в первом комментарии 👇",
+    "Читайте в комментарии 👇",
+    "Читайте в комментариях 👇",
+]
+
 logger = logging.getLogger(__name__)
 
 
@@ -40,12 +61,13 @@ class FaceBookApi:
         self.driver_name = driver
 
     def publish(self):
-        last_date = self.database.get_last_fb_publish_date()
-        now = datetime.datetime.now()
-        diff = now - last_date
-        if diff.total_seconds() < self.config["fb_publish_delay"]:
-            logger.info("No time for update. Only %s time from last post", diff)
-            return
+        logger.info("Facebook Publish start")
+        # last_date = self.database.get_last_fb_publish_date()
+        # now = datetime.datetime.now()
+        # diff = now - last_date
+        # if diff.total_seconds() < self.config["fb_publish_delay"]:
+        #     logger.info("No time for update. Only %s time from last post", diff)
+        #     return
 
         # TODO repeat process with loop of enteties?
 
@@ -98,7 +120,7 @@ class FaceBookApi:
         logger.debug("FB: Log in Finish")
 
     def _post_message(self, msg, image_url):
-        image_file = os.path.abspath(os.path.join(self.wd, "temp_image.jpg"))
+        image_file = os.path.abspath(os.path.join(self.wd, "%s.jpg" % uuid.uuid4()))
         logger.debug("FB: post message. Temp image -> %s", image_file)
         try:
             io.download_file(image_url, image_file)
