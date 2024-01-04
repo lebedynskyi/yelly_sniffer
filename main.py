@@ -28,9 +28,6 @@ if __name__ == "__main__":
         db_updater.process_links(args.links.split(","))
     elif args.sites:
         db_updater.process_sites(args.sites.split(","))
-    else:
-        logger.error("Nothing to do. No '-s/--sites' or '-l/--links' arguments provided")
-        exit(1)
 
     if args.xmlrpc:
         try:

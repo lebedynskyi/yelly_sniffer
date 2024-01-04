@@ -92,7 +92,6 @@ class FaceBookApi:
             self.database.update_fb_status(to_publish.local_id, True)
             self.database.save_last_fb_publish_date()
             logger.info("Facebook published post '%s'", to_publish.title)
-            self.database.update_fb_status(to_publish.local_id, True)
             self.quit()
             return to_publish
         except BaseException as e:

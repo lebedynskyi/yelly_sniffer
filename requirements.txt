@@ -13,3 +13,4 @@ webdriver-manager==4.0.1
 PyYAML==6.0.1
 
 gpt4all==2.0.2
+pyclip==0.7.0

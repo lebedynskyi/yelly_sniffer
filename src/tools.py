@@ -2,8 +2,9 @@ import argparse
 import logging
 import os
 import sys
-import yaml
 from logging.handlers import RotatingFileHandler
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +36,8 @@ def init_logger(out_folder):
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-l", "--links", help="list of links comma separated")
-    group.add_argument("-s", "--sites", help="list of sites comma separated")
-
+    parser.add_argument("-l", "--links", help="list of links comma separated", required=False)
+    parser.add_argument("-s", "--sites", help="list of sites comma separated", required=False)
     parser.add_argument("-d", "--directory", help="Working directory where config.ini", default="output")
     parser.add_argument('-f', "--facebook", help="Enable facebook posting", action='store_true', required=False,
                         default=False)
