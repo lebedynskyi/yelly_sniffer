@@ -4,7 +4,6 @@ import os.path
 from src.api.facebook import FaceBookApi
 from src.api.rpc import RpcApi
 from src.api.telega import TelegramApi
-from src.api.yelly import YellyApi
 from src.db import SQLiteDatabase
 from src.handler import DatabaseUpdater
 from src.tools import parse_args, init_logger, read_configs
@@ -20,9 +19,8 @@ if __name__ == "__main__":
 
     config = read_configs(wd)
 
-    yelly = YellyApi()
     database = SQLiteDatabase(wd, config["general"]["database"])
-    db_updater = DatabaseUpdater(database, yelly, config["general"])
+    db_updater = DatabaseUpdater(database, config["general"])
 
     if args.links:
         db_updater.process_links(args.links.split(","))

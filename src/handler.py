@@ -1,31 +1,44 @@
 import logging
+import urllib
 from collections.abc import Iterable
 
-from src.api.yelly import YellyApi
+from src.api.parsers import CrykamiParser, YellyParser
 
 logger = logging.getLogger(__name__)
 
+_parsers = {"cpykami.ru": CrykamiParser()}
+
+
+def get_parser_for_site(site):
+    try:
+        key = urllib.parse.urlparse(site).netloc
+        if key in _parsers.keys():
+            return _parsers[key]
+
+    except BaseException as e:
+        logger.exception("Unable to parse site %s. Yelly will be used" % site, e)
+
+    return YellyParser()
+
 
 class DatabaseUpdater:
-    def __init__(self, database, yelly: YellyApi, config):
+    def __init__(self, database, config):
         self.config = config
-        self.yelly = yelly
         self.database = database
 
     def process_sites(self, sites):
-        logger.info("Fetching metadata for sites '%s'", sites)
-        page_urls = [self.yelly.get_page_link(s, 0) for s in sites]
-        self.process_pages(page_urls)
-
-    def process_pages(self, pages):
-        logger.info("Fetching metadata for pages '%s'", pages)
-        post_metas = []
-        for page in pages:
-            for meta in self.yelly.get_posts_meta(page):
-                post_metas.append(meta)
+        if not isinstance(sites, Iterable):
+            sites = [sites]
 
         # TODO redesign to work page by page ??
-        logger.info("Updater fetched %s titles for pages '%s'", len(post_metas), pages)
+        logger.info("Fetching metadata for sites '%s'", sites)
+        post_metas = []
+        for s in sites:
+            parser = get_parser_for_site(s)
+            for meta in parser.get_posts_meta(s):
+                post_metas.append(meta)
+
+        logger.info("Fetched %s metas for sites %s", len(post_metas), sites)
         count = self._check_update(post_metas)
         if count > 0:
             logger.info("Updater saved %s new titles", count)
@@ -38,7 +51,8 @@ class DatabaseUpdater:
 
         count = 0
         for link in links:
-            content = self.yelly.get_post_content(link)
+            parser = get_parser_for_site(link)
+            content = parser.get_post_content(link)
             if not self.database.exist(content.title):
                 self.database.insert_new_post(content)
                 count = count + 1
@@ -49,8 +63,9 @@ class DatabaseUpdater:
         count = 0
         for meta in post_metas:
             if not self.database.exist(meta.title):
-                logger.info("Fetch %s", meta.url)
-                content = self.yelly.get_post_content(meta.url)
+                logger.info("Fetch %s", meta.title)
+                parser = get_parser_for_site(meta.url)
+                content = parser.get_post_content(meta.url)
                 self.database.insert_new_post(content)
                 count = count + 1
 
