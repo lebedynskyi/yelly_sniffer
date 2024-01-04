@@ -20,7 +20,7 @@ def init_logger(out_folder):
     console_info_handler.setFormatter(formatter)
 
     log_file = os.path.join(out_folder, "logs.log")
-    file_handler = RotatingFileHandler(filename=log_file, maxBytes=int(0.5 * 1024 * 1024),
+    file_handler = RotatingFileHandler(filename=log_file, maxBytes=int(0.25 * 1024 * 1024),
                                        mode='a', backupCount=5, encoding="utf-8", delay=False)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)

@@ -72,11 +72,14 @@ class FaceBookApi:
         # TODO repeat process with loop of enteties?
 
         to_publish_posts = self.database.find_by_fb_status(False, True)
+
         if not to_publish_posts:
             logger.info("Facebook everything is up to date")
             return
 
-        to_publish = to_publish_posts[0]
+        to_publish_posts = to_publish_posts[:10]
+        to_publish = random.choice(to_publish_posts)
+
         try:
             if to_publish.title[-1].isalpha():
                 post_title = "%s%s %s" % (to_publish.title, random.choice(["!", "."]), random.choice(intention))

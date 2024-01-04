@@ -1,12 +1,16 @@
 import logging
+import random
 import urllib
 from collections.abc import Iterable
 
-from src.api.parsers import CrykamiParser, YellyParser
+from src.api.parsers import CrykamiParser, YellyParser, UkrainnParser
 
 logger = logging.getLogger(__name__)
 
-_parsers = {"cpykami.ru": CrykamiParser()}
+_parsers = {
+    "cpykami.ru": CrykamiParser(),
+    "ukrainn.site": UkrainnParser()
+}
 
 
 def get_parser_for_site(site):

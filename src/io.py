@@ -50,6 +50,7 @@ def dump_to_file(file_path, content):
 
     return True
 
+
 def ensure_folder_for_site(base_folder, url):
     host = urllib.parse.urlparse(url)
     site_folder = os.path.join(base_folder, host.netloc)
