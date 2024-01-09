@@ -3,13 +3,14 @@ import random
 import urllib
 from collections.abc import Iterable
 
-from src.api.parsers import CrykamiParser, YellyParser, UkrainnParser
+from src.api.parsers import CrykamiParser, YellyParser, UkrainnParser, HappyTimesParser
 
 logger = logging.getLogger(__name__)
 
 _parsers = {
     "cpykami.ru": CrykamiParser(),
-    "ukrainn.site": UkrainnParser()
+    "ukrainn.site": UkrainnParser(),
+    "happytimes.info": HappyTimesParser()
 }
 
 
