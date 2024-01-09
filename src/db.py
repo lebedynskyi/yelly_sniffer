@@ -38,7 +38,7 @@ class SQLiteDatabase:
 
     def find_by_rpc_status(self, status):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM posts where rpc_publish=?", (status,))
+        cursor.execute("SELECT * FROM posts where rpc_publish=? ORDER BY date DESC", (status,))
         res = cursor.fetchall()
         return [PostEntity(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8]) for r in res]
 

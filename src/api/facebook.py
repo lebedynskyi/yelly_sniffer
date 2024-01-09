@@ -77,7 +77,7 @@ class FaceBookApi:
             logger.info("Facebook everything is up to date")
             return
 
-        to_publish_posts = to_publish_posts[:5]
+        to_publish_posts = to_publish_posts[:3]
         to_publish = random.choice(to_publish_posts)
 
         try:

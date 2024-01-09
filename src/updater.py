@@ -44,11 +44,14 @@ class DatabaseUpdater:
                 post_metas.append(meta)
 
         logger.info("Fetched %s metas for sites %s", len(post_metas), sites)
+        random.shuffle(post_metas)
+
         count = self._check_update(post_metas)
         if count > 0:
             logger.info("Updater saved %s new titles", count)
         else:
             logger.info("Updater everything is up to date")
+        return count
 
     def process_links(self, links):
         if not isinstance(links, Iterable):
@@ -62,6 +65,10 @@ class DatabaseUpdater:
                 self.database.insert_new_post(content)
                 count = count + 1
 
+        if count > 0:
+            logger.info("Updater saved %s new titles", count)
+        else:
+            logger.info("Updater everything is up to date")
         return count
 
     def _check_update(self, post_metas):

@@ -29,6 +29,7 @@ def init_logger(out_folder):
 
     logging.getLogger("selenium.webdriver.remote.remote_connection").setLevel(logging.WARNING)
     logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
 
     logger.info("Logger initialized")
 
