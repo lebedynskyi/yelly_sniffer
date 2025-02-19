@@ -14,11 +14,11 @@ def test():
     wd = os.path.abspath(args.directory)
     init_logger(wd)
     logger.debug("Working directory is '%s'", wd)
-
-    fb = FaceBookApi("firefox", None, wd, None, headless=False)
-    fb._login()
-    fb._post_message("☺️😘Привет девчонки. Делюсь рецептом 🖐🤚.. Ссылка в первом комментари👇👇👇",
-                     "https://sweety-life.fun/wp-content/uploads/2024/01/1704353278_a43683d33b40f413228d54e3c6ed4a2f.jpg")
+    #
+    # fb = FaceBookApi("firefox", None, wd, None, headless=False)
+    # fb._login()
+    # fb._post_message("☺️😘Привет девчонки. Делюсь рецептом 🖐🤚.. Ссылка в первом комментари👇👇👇",
+    #                  "https://sweety-life.fun/wp-content/uploads/2024/01/1704353278_a43683d33b40f413228d54e3c6ed4a2f.jpg")
 
 
 def main():
@@ -58,6 +58,9 @@ def main():
 
 if __name__ == "__main__":
     print("------------- Welcome to Vetalll Auto -------------")
-    main()
+    try:
+        main()
+    except BaseException as e:
+        logger.error("Error during automation", e)
     logger.info("------------- Finish Vetalll Auto -------------\n")
     exit(0)

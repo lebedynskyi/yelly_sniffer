@@ -190,7 +190,7 @@ class FaceBookApi:
         prefs = {"profile.default_content_setting_values.notifications": 2}
         opts = Options()
         opts.add_experimental_option("prefs", prefs)
-        opts.add_argument('--user-data-dir=posts/chrome')
+        opts.add_argument('--user-data-dir=profiles/chrome')
         opts.add_argument('--profile-directory=Default')
         opts.add_argument('--start-minimized')
         opts.add_argument("--ignore-certificate-errors")

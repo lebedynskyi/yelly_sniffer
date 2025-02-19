@@ -3,6 +3,8 @@ import os
 import ssl
 import urllib.parse
 import urllib.request
+import urllib.request
+import http.cookiejar
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -20,6 +22,27 @@ def do_get(url):
 
     stream = urllib.request.urlopen(request)
     return stream.read().decode("utf-8'")
+
+
+def do_get_with_redirects(url):
+    if not url:
+        raise ValueError("url cannot be empty")
+
+    # Create a cookie jar to handle cookies during redirects
+    cookie_jar = http.cookiejar.CookieJar()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
+
+    # Set headers
+    request = urllib.request.Request(url)
+    request.add_header("Content-Encoding", "UTF-8")
+    request.add_header("Accept-Charset", "UTF-8")
+    request.add_header("User-Agent",
+                       "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36")
+    request.add_header("Accept-Language", "en-US,en;q=0.9")
+
+    # Open URL and follow redirects
+    with opener.open(request) as response:
+        return response.read().decode("utf-8")
 
 
 def download_file(url, file):

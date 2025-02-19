@@ -1,11 +1,16 @@
 import logging
 import re
+import time
 from abc import ABC, abstractmethod
 
 from bs4 import BeautifulSoup
 
 from src import io
 from src.models import PostContent, PostMeta
+
+from selenium import webdriver
+from selenium.webdriver import Keys
+from selenium.webdriver.common.by import By
 
 logger = logging.getLogger(__name__)
 
@@ -304,6 +309,70 @@ class HappyTimesParser(Parser):
             img["srcset"] = None
         return PostContent(post_title, content.renderContents(prettyPrint=True).decode("utf8"), post_url,
                            feature_image)
+
+
+class DzenRuParser(Parser):
+    _driver = None
+
+    def __init__(self, headless=True):
+        self.headless = headless
+
+    def get_posts_meta(self, site_url):
+        self._init_driver()
+        self._driver.maximize_window()
+        self._driver.get(site_url)
+        time.sleep(5)
+        posts = self._driver.find_elements(By.CLASS_NAME, "desktop2--card-article__cardWrapper-1S")
+        posts_meta = []
+        for p in posts:
+            a_href = p.find_elements(By.TAG_NAME, "a")[1]
+            posts_meta.append(PostMeta(a_href.text, a_href.get_attribute("href")))
+        return posts_meta
+
+    def get_post_content(self, post_url):
+        self._init_driver()
+        self._driver.get(post_url)
+        time.sleep(5)
+        post = self._driver.find_element(By.CLASS_NAME, "content--article-item-content__content-1S")
+        post_title = post.find_element(By.TAG_NAME, "h1").text
+
+        content = post.find_element(By.CLASS_NAME, "content--article-render__container-1k")
+        post_content = content.get_attribute("innerHTML")
+        parser = BeautifulSoup(post_content, 'html.parser')
+        feature_image = None
+        for img in parser.find_all("img"):
+            feature_image = img["src"]
+            img["alt"] = post_title
+            try:
+                img["class"].append("aligncenter")
+                img["class"].append("size-full")
+            except:
+                img["class"] = "aligncenter size-full"
+
+            img["sizes"] = None
+            img["srcset"] = None
+
+        return PostContent(post_title, post_content, post_url, feature_image)
+
+    def _init_driver(self):
+        if not self._driver:
+            self._driver = self._chrome_driver()
+
+    def _chrome_driver(self):
+        from selenium.webdriver.chrome.options import Options
+        prefs = {"profile.default_content_setting_values.notifications": 2}
+        opts = Options()
+        opts.add_experimental_option("prefs", prefs)
+        # opts.add_argument('--user-data-dir=profiles/chrome')
+        opts.add_argument('--profile-directory=Default')
+        opts.add_argument("--ignore-certificate-errors")
+        opts.add_argument("--no-sandbox")
+        opts.add_argument("--disable-dev-shm-usage")
+        if self.headless:
+            opts.add_argument('--start-minimized')
+            opts.add_argument('--headless')
+            opts.add_argument('--disable-gpu')
+        return webdriver.Chrome(options=opts)
 
 
 if __name__ == "__main__":
