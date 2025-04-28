@@ -1,7 +1,6 @@
 import logging
 import os.path
 
-from src.api.facebook import FaceBookApi
 from src.db import SQLiteDatabase
 from src.processor import process_updater, process_rpc, process_facebook, process_telega
 from src.tools import parse_args, init_logger, read_configs
@@ -39,7 +38,6 @@ def main():
         logger.info("Updater is not enabled. No -s/--sites -l/--links arguments provided")
 
     if app_args.xmlrpc:
-        # TODO add rpc count argument https://stackoverflow.com/questions/30896982/argparse-optional-value-for-argument
         process_rpc(app_database, app_config, count=1)
     else:
         logger.info("RPC Is not enabled")
@@ -64,3 +62,4 @@ if __name__ == "__main__":
         logger.error("Error during automation", e)
     logger.info("------------- Finish Vetalll Auto -------------\n")
     exit(0)
+

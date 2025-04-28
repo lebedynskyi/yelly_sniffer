@@ -76,10 +76,18 @@ class DatabaseUpdater:
         count = 0
         for meta in post_metas:
             if not self.database.exist(meta.title):
-                logger.info("Fetch %s", meta.title)
-                parser = get_parser_for_site(meta.url)
-                content = parser.get_post_content(meta.url)
-                self.database.insert_new_post(content)
-                count = count + 1
+                count = count + self._check_update_for_meta(meta)
+
+            if count == 2:
+                break
 
         return count
+
+    def _check_update_for_meta(self, meta):
+        if not self.database.exist(meta.title):
+            logger.info("Fetch %s", meta.title)
+            parser = get_parser_for_site(meta.url)
+            content = parser.get_post_content(meta.url)
+            self.database.insert_new_post(content)
+            return 1
+        return 0

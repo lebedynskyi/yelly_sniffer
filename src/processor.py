@@ -3,6 +3,7 @@ import logging
 from src.api.facebook import FaceBookApi
 from src.api.rpc import RpcApi
 from src.api.telega import TelegramApi
+from src.api.web_driver import chrome_driver, uc_chrome_driver
 from src.models import PostEntity
 from src.updater import DatabaseUpdater
 
@@ -29,11 +30,10 @@ def process_rpc(database, config, count):
 
 def process_facebook(database, directory, config):
     try:
-        fb = FaceBookApi("firefox", database, directory, config["general"], headless=True)
+        fb = FaceBookApi(uc_chrome_driver(), database, directory, config["facebook"], headless=False)
         return fb.publish()
     except BaseException as e:
         logger.exception("Unable to publish by facebook", e)
-        return e
 
 
 def process_telega(config, data):

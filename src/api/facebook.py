@@ -3,27 +3,28 @@ import os
 import random
 import time
 import uuid
+import bs4
 
-from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 from src import io
 
 selector_post_start = "div.xi81zsa"
-xpath_post_body = "//div[@aria-label='Что у вас нового?']"
+xpath_post_body = "//div[@aria-placeholder='Что у вас нового?']"
 xpath_comment_body = "//div[@aria-label='Напишите комментарий…']"
 
 intention = [
-    "Больше в первом комментарии.",
-    "Больше в комментарии.",
-    "Больше в комментариях.",
-    "Подробнее в первом комментарии.",
-    "Подробнее в комментарии.",
-    "Подробнее в комментариях.",
-    "Читайте в первом комментарии.",
-    "Читайте в комментарии.",
-    "Читайте в комментариях.",
+    "Продолжение чуть ниже в первом комментарии!",
+    "Читайте больше в комментарии под этим постом!",
+    "Полный текст в комментарии!",
+    "Продолжение ждёт вас в комментариях!",
+    "Не пропустите продолжение — в первом комментарии!",
+    "Больше информации в комментариях!",
+    "Подробности можно найти в комментарии!",
+    "Хотите больше? Читайте в первом комментарии!",
+    "Полная версия ниже в комментарии!",
+    "Ответы и продолжение истории — в комментарии!"
 ]
 
 intention_emoji = [
@@ -51,24 +52,16 @@ logger = logging.getLogger(__name__)
 
 
 class FaceBookApi:
-    driver = None
 
     def __init__(self, driver, database, wd, config, headless=True):
         self.config = config
         self.database = database
         self.wd = wd
         self.headless = headless
-        self.driver_name = driver
+        self.driver = driver
 
     def publish(self):
         logger.info("Facebook Publish start")
-        # last_date = self.database.get_last_fb_publish_date()
-        # now = datetime.datetime.now()
-        # diff = now - last_date
-        # if diff.total_seconds() < self.config["fb_publish_delay"]:
-        #     logger.info("No time for update. Only %s time from last post", diff)
-        #     return
-
         # TODO repeat process with loop of enteties?
 
         to_publish_posts = self.database.find_by_fb_status(False, True)
@@ -81,16 +74,19 @@ class FaceBookApi:
         to_publish = random.choice(to_publish_posts)
 
         try:
-            if to_publish.title[-1].isalpha():
-                post_title = "%s%s %s" % (to_publish.title, random.choice(["!", "."]), random.choice(intention))
-            else:
-                post_title = "%s %s" % (to_publish.title, random.choice(intention))
+            soup = bs4.BeautifulSoup(to_publish.orig_content, 'html.parser')
+            text = soup.get_text(separator='\n')
+            text_lines = text.split('\n')
+            num_lines_to_keep = int(len(text_lines) * 0.4)
+            lines_to_keep = text_lines[:num_lines_to_keep]
+            site_text = '\n'.join(lines_to_keep)
 
+            post_text = "%s... %s" % (site_text, random.choice(intention))
             post_image = to_publish.image
             post_comment = "%s %s" % (to_publish.title, to_publish.own_url)
 
             self._login()
-            self._post_message(post_title, post_image)
+            self._post_message(post_text, post_image)
             self._post_comment(post_comment)
             self.database.update_fb_status(to_publish.local_id, True)
             self.database.save_last_fb_publish_date()
@@ -107,19 +103,52 @@ class FaceBookApi:
         self.driver.quit()
 
     def _login(self):
-        logger.debug("FB: log in. Driver %s", self.driver_name)
-        if self.driver_name.lower() == "chrome":
-            self.driver = self._chrome_driver()
-        elif self.driver_name.lower() == "firefox":
-            self.driver = self._firefox_driver()
-        else:
-            raise AttributeError("Unknown driver name '%s'" % self.driver_name)
-
         self.driver.maximize_window()
-        self.driver.get("https://www.facebook.com/sweetylife.fun")
-        time.sleep(5)
-        self.driver.save_screenshot(os.path.join(self.wd, "Login.png"))
+        self.driver.get(self.config["fb_page"])
+        time.sleep(2)
+
+        accept_cookie = self.driver.find_elements(By.XPATH, "//div[@aria-label='Разрешить все cookie']")
+        if accept_cookie:
+            logger.debug("FB: Found cookie. Accept it")
+            self.driver.save_screenshot(os.path.join(self.wd, "AcceptCookie.png"))
+            accept_cookie[1].click()
+        time.sleep(2)
+
+        not_authed = self.driver.find_elements(By.XPATH, "//div[@aria-label='Создать новый аккаунт']")
+        if not_authed:
+            logger.debug("FB: Not authed. Login...")
+
+            username = self.driver.find_element(By.XPATH, '//input[@type="text" and @name="email"]')
+            if username:
+                username.click()
+                time.sleep(1)
+                username.send_keys(self.config["fb_user"])
+
+            time.sleep(2)
+            password = self.driver.find_elements(By.XPATH, '//input[@type="password" and @name="pass"]')
+            if password:
+                password[1].click()
+                time.sleep(1)
+                password[1].send_keys(self.config["fb_password"])
+
+            self.driver.save_screenshot(os.path.join(self.wd, "Login.png"))
+
+            time.sleep(1)
+            enter = self.driver.find_element(By.XPATH, "//div[@aria-label='Войти на Facebook']")
+            if enter:
+                enter.click()
+
+            time.sleep(15)
+
+
+        switch = self.driver.find_elements(By.XPATH, "//span[.='Переключиться']")
+        if switch:
+            logger.debug("FB: Switch to page")
+            switch[3].click()
+            time.sleep(5)
+
         logger.debug("FB: Log in Finish")
+
 
     def _post_message(self, msg, image_url):
         image_file = os.path.abspath(os.path.join(self.wd, "%s.jpg" % uuid.uuid4()))
@@ -174,6 +203,10 @@ class FaceBookApi:
         self.driver.save_screenshot(os.path.join(self.wd, "PostFull.png"))
 
     def _finish_post(self):
+        next_btn = self.driver.find_element(By.XPATH, "//div[@aria-label='Далее']")
+        next_btn.click()
+        time.sleep(3)
+
         post_btn = self.driver.find_element(By.XPATH, "//div[@aria-label='Опубликовать']")
         post_btn.click()
         time.sleep(15)
@@ -184,26 +217,3 @@ class FaceBookApi:
             dont_now[0].click()
             self.driver.save_screenshot(os.path.join(self.wd, "DontNowClick.png"))
             time.sleep(15)
-
-    def _chrome_driver(self):
-        from selenium.webdriver.chrome.options import Options
-        prefs = {"profile.default_content_setting_values.notifications": 2}
-        opts = Options()
-        opts.add_experimental_option("prefs", prefs)
-        opts.add_argument('--user-data-dir=profiles/chrome')
-        opts.add_argument('--profile-directory=Default')
-        opts.add_argument('--start-minimized')
-        opts.add_argument("--ignore-certificate-errors")
-        if self.headless:
-            opts.add_argument('--headless')
-            opts.add_argument('--disable-gpu')
-        return webdriver.Chrome(options=opts)
-
-    def _firefox_driver(self):
-        from selenium.webdriver.firefox.options import Options
-        ffOptions = Options()
-        if self.headless:
-            ffOptions.add_argument("--headless")
-        ffOptions.add_argument("-profile")
-        ffOptions.add_argument(os.path.join(self.wd, 'firefox/w64vj4qk.default-release'))
-        return webdriver.Firefox(options=ffOptions)

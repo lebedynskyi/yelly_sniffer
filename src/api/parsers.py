@@ -6,10 +6,9 @@ from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 
 from src import io
+from src.api.web_driver import chrome_driver
 from src.models import PostContent, PostMeta
 
-from selenium import webdriver
-from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 logger = logging.getLogger(__name__)
@@ -316,9 +315,9 @@ class DzenRuParser(Parser):
 
     def __init__(self, headless=True):
         self.headless = headless
+        self._driver = chrome_driver(headless)
 
     def get_posts_meta(self, site_url):
-        self._init_driver()
         self._driver.maximize_window()
         self._driver.get(site_url)
         time.sleep(5)
@@ -330,7 +329,6 @@ class DzenRuParser(Parser):
         return posts_meta
 
     def get_post_content(self, post_url):
-        self._init_driver()
         self._driver.get(post_url)
         time.sleep(5)
         post = self._driver.find_element(By.CLASS_NAME, "content--article-item-content__content-1S")
@@ -338,9 +336,9 @@ class DzenRuParser(Parser):
 
         content = post.find_element(By.CLASS_NAME, "content--article-render__container-1k")
         post_content = content.get_attribute("innerHTML")
-        parser = BeautifulSoup(post_content, 'html.parser')
+        content_parser = BeautifulSoup(post_content, 'html.parser')
         feature_image = None
-        for img in parser.find_all("img"):
+        for img in content_parser.find_all("img"):
             feature_image = img["src"]
             img["alt"] = post_title
             try:
@@ -352,28 +350,27 @@ class DzenRuParser(Parser):
             img["sizes"] = None
             img["srcset"] = None
 
-        return PostContent(post_title, post_content, post_url, feature_image)
+            while img.parent and (img.parent.has_attr("class") or img.parent.name != "div"):
+                img.parent.unwrap()
 
-    def _init_driver(self):
-        if not self._driver:
-            self._driver = self._chrome_driver()
+            for div in img.parent.find_all("div"):
+                div.decompose()
 
-    def _chrome_driver(self):
-        from selenium.webdriver.chrome.options import Options
-        prefs = {"profile.default_content_setting_values.notifications": 2}
-        opts = Options()
-        opts.add_experimental_option("prefs", prefs)
-        # opts.add_argument('--user-data-dir=profiles/chrome')
-        opts.add_argument('--profile-directory=Default')
-        opts.add_argument("--ignore-certificate-errors")
-        opts.add_argument("--no-sandbox")
-        opts.add_argument("--disable-dev-shm-usage")
-        if self.headless:
-            opts.add_argument('--start-minimized')
-            opts.add_argument('--headless')
-            opts.add_argument('--disable-gpu')
-        return webdriver.Chrome(options=opts)
+        links = content_parser.findAll("a", {'class': 'content--article-link__articleLink-OU'})
+        for l in links:
+            l.decompose()
 
+        for item in content_parser.findAll("div", {'data-ahgkhv4yl': 'embed-block_yandex-zen-publication'}):
+            item.decompose()
+
+        source_link = content_parser.new_tag(name="a", href=post_url)
+        source_link.string = "Источник"
+        content_parser.append(content_parser.new_tag("p"))
+        content_parser.append(source_link)
+
+        return PostContent(
+            post_title, content_parser.renderContents(prettyPrint=True).decode("utf8"), post_url, feature_image
+        )
 
 if __name__ == "__main__":
     pars = HappyTimesParser()

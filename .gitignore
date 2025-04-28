@@ -1,6 +1,7 @@
 .idea
 output
 venv
+profiles
 
 *.pyc
 __pycache__

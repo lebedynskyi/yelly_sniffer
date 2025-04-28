@@ -1,6 +1,5 @@
 general:
   database: posts.db
-  fb_publish_delay: 5500 # seconds
 
 chat_gpt:
   api_key: key
@@ -12,7 +11,9 @@ xml_rpc:
 
 telegram:
   tele_token: token
-  tele_channel: chanek_id
+  tele_channel: chanel_id
 
 facebook:
   fb_page: fb_page_url
+  fb_user: user
+  fb_password: password
