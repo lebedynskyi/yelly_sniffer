@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Parser(ABC):
+    driver = None
     @abstractmethod
     def get_posts_meta(self, site_url):
         pass

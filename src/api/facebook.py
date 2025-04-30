@@ -12,7 +12,7 @@ from src import io
 
 selector_post_start = "div.xi81zsa"
 xpath_post_body = "//div[@aria-placeholder='Что у вас нового?']"
-xpath_comment_body = "//div[@aria-label='Напишите комментарий…']"
+xpath_comment_body = "//div[@aria-label='Комментировать как Sweety Life']"
 
 intention = [
     "Продолжение чуть ниже в первом комментарии!",
@@ -53,11 +53,10 @@ logger = logging.getLogger(__name__)
 
 class FaceBookApi:
 
-    def __init__(self, driver, database, wd, config, headless=True):
+    def __init__(self, driver, database, wd, config):
         self.config = config
         self.database = database
         self.wd = wd
-        self.headless = headless
         self.driver = driver
 
     def publish(self):
@@ -77,7 +76,7 @@ class FaceBookApi:
             soup = bs4.BeautifulSoup(to_publish.orig_content, 'html.parser')
             text = soup.get_text(separator='\n')
             text_lines = text.split('\n')
-            num_lines_to_keep = int(len(text_lines) * 0.4)
+            num_lines_to_keep = int(len(text_lines) * 0.20)
             lines_to_keep = text_lines[:num_lines_to_keep]
             site_text = '\n'.join(lines_to_keep)
 
@@ -168,6 +167,9 @@ class FaceBookApi:
     def _post_comment(self, text):
         try:
             logger.debug("FB: post comment")
+            self.driver.find_elements(By.XPATH, "//span[.='Комментировать']")[0].click()
+            time.sleep(5)
+
             comment_area = self.driver.find_element(By.XPATH, xpath_comment_body)
             comment_area.click()
             time.sleep(2)
@@ -178,7 +180,7 @@ class FaceBookApi:
             self.driver.save_screenshot(os.path.join(self.wd, "CommentFull.png"))
             comment_area.send_keys(Keys.ENTER)
             logger.debug("FB: post comment success")
-            time.sleep(5)
+            time.sleep(10)
         except BaseException as e:
             logger.exception("FB: Post comment Failed!!", e)
             raise e

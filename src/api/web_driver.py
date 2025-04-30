@@ -29,7 +29,7 @@ def chrome_driver(headless=False):
 def uc_chrome_driver(headless=False):
     import undetected_chromedriver as uc
     from selenium.webdriver.chrome.options import Options
-    user_data_dir = os.path.abspath("chromeData")
+    user_data_dir = os.path.abspath("output/chromeData")
 
     opts = Options()
     opts.add_argument("--disable-notifications")

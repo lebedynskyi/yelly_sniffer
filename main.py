@@ -1,6 +1,7 @@
 import logging
 import os.path
 
+from src.api.web_driver import uc_chrome_driver
 from src.db import SQLiteDatabase
 from src.processor import process_updater, process_rpc, process_facebook, process_telega
 from src.tools import parse_args, init_logger, read_configs
@@ -28,12 +29,12 @@ def main():
     app_config = read_configs(app_wd)
     app_database = SQLiteDatabase(app_wd, app_config["general"]["database"])
 
-    # TODO extract configs from args. Pass just config dict
+    driver = uc_chrome_driver(headless=True)
 
     if app_args.links:
-        process_updater(app_args, app_database, app_config, links=app_args.links.split(","))
+        process_updater(app_args, app_database, app_config, driver, links=app_args.links.split(","))
     elif app_args.sites:
-        process_updater(app_args, app_database, app_config, sites=app_args.sites.split(","))
+        process_updater(app_args, app_database, app_config, driver, sites=app_args.sites.split(","))
     else:
         logger.info("Updater is not enabled. No -s/--sites -l/--links arguments provided")
 
@@ -44,7 +45,7 @@ def main():
 
     published = None
     if app_args.facebook:
-        published = process_facebook(app_database, app_wd, app_config)
+        published = process_facebook(app_database, app_wd, app_config, driver)
     else:
         logger.info("Facebook is not enabled")
 

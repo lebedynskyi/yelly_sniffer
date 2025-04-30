@@ -3,21 +3,20 @@ import logging
 from src.api.facebook import FaceBookApi
 from src.api.rpc import RpcApi
 from src.api.telega import TelegramApi
-from src.api.web_driver import chrome_driver, uc_chrome_driver
 from src.models import PostEntity
 from src.updater import DatabaseUpdater
 
 logger = logging.getLogger(__name__)
 
 
-def process_updater(args, database, config, links=None, sites=None):
+def process_updater(args, database, config, driver, links=None, sites=None):
     db_updater = DatabaseUpdater(database, config["general"])
 
     if args.links:
-        db_updater.process_links(links)
+        db_updater.process_links(links, driver)
 
     if args.sites:
-        db_updater.process_sites(sites)
+        db_updater.process_sites(sites, driver)
 
 
 def process_rpc(database, config, count):
@@ -28,9 +27,9 @@ def process_rpc(database, config, count):
         logger.exception("Unable to publish by rpc", e)
 
 
-def process_facebook(database, directory, config):
+def process_facebook(database, directory, config, driver):
     try:
-        fb = FaceBookApi(uc_chrome_driver(), database, directory, config["facebook"], headless=False)
+        fb = FaceBookApi(driver, database, directory, config["facebook"])
         return fb.publish()
     except BaseException as e:
         logger.exception("Unable to publish by facebook", e)
