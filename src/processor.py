@@ -9,14 +9,14 @@ from src.updater import DatabaseUpdater
 logger = logging.getLogger(__name__)
 
 
-def process_updater(args, database, config, driver, links=None, sites=None):
+def process_updater(args, database, config, links=None, sites=None):
     db_updater = DatabaseUpdater(database, config["general"])
 
     if args.links:
-        db_updater.process_links(links, driver)
+        db_updater.process_links(links)
 
     if args.sites:
-        db_updater.process_sites(sites, driver)
+        db_updater.process_sites(sites)
 
 
 def process_rpc(database, config, count):
@@ -27,9 +27,9 @@ def process_rpc(database, config, count):
         logger.exception("Unable to publish by rpc", e)
 
 
-def process_facebook(database, directory, config, driver):
+def process_facebook(database, directory, config):
     try:
-        fb = FaceBookApi(driver, database, directory, config["facebook"])
+        fb = FaceBookApi(database, directory, config["facebook"])
         return fb.publish()
     except BaseException as e:
         logger.exception("Unable to publish by facebook", e)

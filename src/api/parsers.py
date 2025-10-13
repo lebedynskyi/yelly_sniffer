@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 
 from src import io
-from src.api.web_driver import chrome_driver
+from src.api.web_driver import uc_chrome_driver, chrome_driver
 from src.models import PostContent, PostMeta
 
 from selenium.webdriver.common.by import By
@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 class Parser(ABC):
-    driver = None
     @abstractmethod
     def get_posts_meta(self, site_url):
         pass
@@ -314,24 +313,22 @@ class HappyTimesParser(Parser):
 class DzenRuParser(Parser):
     _driver = None
 
-    def __init__(self, headless=True):
-        self.headless = headless
-        self._driver = chrome_driver(headless)
-
     def get_posts_meta(self, site_url):
+        self.init_driver()
         self._driver.maximize_window()
         self._driver.get(site_url)
-        time.sleep(5)
-        posts = self._driver.find_elements(By.CLASS_NAME, "desktop2--card-article__cardWrapper-1S")
+        time.sleep(3)
+        posts = self._driver.find_elements(By.TAG_NAME, "article")
         posts_meta = []
         for p in posts:
-            a_href = p.find_elements(By.TAG_NAME, "a")[1]
+            a_href = p.find_elements(By.TAG_NAME, "a")[0]
             posts_meta.append(PostMeta(a_href.text, a_href.get_attribute("href")))
         return posts_meta
 
     def get_post_content(self, post_url):
+        self.init_driver()
         self._driver.get(post_url)
-        time.sleep(5)
+        time.sleep(3)
         post = self._driver.find_element(By.CLASS_NAME, "content--article-item-content__content-1S")
         post_title = post.find_element(By.TAG_NAME, "h1").text
 
@@ -368,10 +365,15 @@ class DzenRuParser(Parser):
         source_link.string = "Источник"
         content_parser.append(content_parser.new_tag("p"))
         content_parser.append(source_link)
-
+        post_content = content_parser.renderContents(prettyPrint=True).decode("utf8")
         return PostContent(
-            post_title, content_parser.renderContents(prettyPrint=True).decode("utf8"), post_url, feature_image
+            post_title, post_content, post_url, feature_image
         )
+
+    def init_driver(self):
+        if not self._driver:
+            self._driver = chrome_driver()
+
 
 if __name__ == "__main__":
     pars = HappyTimesParser()

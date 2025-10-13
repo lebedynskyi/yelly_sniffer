@@ -15,7 +15,7 @@ _parsers = {
 }
 
 
-def get_parser_for_site(site, driver):
+def get_parser_for_site(site):
     parser = YellyParser()
     try:
         key = urllib.parse.urlparse(site).netloc
@@ -25,7 +25,6 @@ def get_parser_for_site(site, driver):
     except BaseException as e:
         logger.exception("Unable to parse site %s. Yelly will be used" % site, e)
 
-    parser.driver = driver
     return parser
 
 
@@ -34,7 +33,7 @@ class DatabaseUpdater:
         self.config = config
         self.database = database
 
-    def process_sites(self, sites, driver):
+    def process_sites(self, sites):
         if not isinstance(sites, Iterable):
             sites = [sites]
 
@@ -42,27 +41,27 @@ class DatabaseUpdater:
         logger.info("Fetching metadata for sites '%s'", sites)
         post_metas = []
         for s in sites:
-            parser = get_parser_for_site(s, driver)
+            parser = get_parser_for_site(s)
             for meta in parser.get_posts_meta(s):
                 post_metas.append(meta)
 
         logger.info("Fetched %s metas for sites %s", len(post_metas), sites)
         random.shuffle(post_metas)
 
-        count = self._check_update(post_metas, driver)
+        count = self._check_update(post_metas)
         if count > 0:
             logger.info("Updater saved %s new titles", count)
         else:
             logger.info("Updater everything is up to date")
         return count
 
-    def process_links(self, links, driver):
+    def process_links(self, links):
         if not isinstance(links, Iterable):
             links = [links]
 
         count = 0
         for link in links:
-            parser = get_parser_for_site(link, driver)
+            parser = get_parser_for_site(link)
             content = parser.get_post_content(link)
             if not self.database.exist(content.title):
                 self.database.insert_new_post(content)
@@ -74,21 +73,21 @@ class DatabaseUpdater:
             logger.info("Updater everything is up to date")
         return count
 
-    def _check_update(self, post_metas, driver):
+    def _check_update(self, post_metas):
         count = 0
         for meta in post_metas:
             if not self.database.exist(meta.title):
-                count = count + self._check_update_for_meta(meta, driver)
+                count = count + self._check_update_for_meta(meta)
 
             if count == 2:
                 break
 
         return count
 
-    def _check_update_for_meta(self, meta, driver):
+    def _check_update_for_meta(self, meta):
         if not self.database.exist(meta.title):
             logger.info("Fetch %s", meta.title)
-            parser = get_parser_for_site(meta.url, driver)
+            parser = get_parser_for_site(meta.url)
             content = parser.get_post_content(meta.url)
             self.database.insert_new_post(content)
             return 1

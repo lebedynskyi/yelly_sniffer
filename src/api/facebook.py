@@ -9,6 +9,7 @@ from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 from src import io
+from src.api.web_driver import uc_chrome_driver, chrome_driver
 
 selector_post_start = "div.xi81zsa"
 xpath_post_body = "//div[@aria-placeholder='Что у вас нового?']"
@@ -52,22 +53,21 @@ logger = logging.getLogger(__name__)
 
 
 class FaceBookApi:
-
-    def __init__(self, driver, database, wd, config):
+    def __init__(self, database, wd, config):
         self.config = config
         self.database = database
         self.wd = wd
-        self.driver = driver
+        self.driver = chrome_driver()
 
     def publish(self):
         logger.info("Facebook Publish start")
-        # TODO repeat process with loop of enteties?
+        # TODO repeat process with loop of entities?
 
         to_publish_posts = self.database.find_by_fb_status(False, True)
 
         if not to_publish_posts:
             logger.info("Facebook everything is up to date")
-            return
+            return None
 
         to_publish_posts = to_publish_posts[:3]
         to_publish = random.choice(to_publish_posts)
@@ -75,14 +75,11 @@ class FaceBookApi:
         try:
             soup = bs4.BeautifulSoup(to_publish.orig_content, 'html.parser')
             text = soup.get_text(separator='\n')
-            text_lines = text.split('\n')
-            num_lines_to_keep = int(len(text_lines) * 0.20)
-            lines_to_keep = text_lines[:num_lines_to_keep]
-            site_text = '\n'.join(lines_to_keep)
+            preview_text = self._prepare_preview_text(text)
 
-            post_text = "%s... %s" % (site_text, random.choice(intention))
+            post_text = "%s... %s" % (preview_text, random.choice(intention))
             post_image = to_publish.image
-            post_comment = "%s %s" % (to_publish.title, to_publish.own_url)
+            post_comment = "%s %s" % ("Полная статья по ссылке:", to_publish.own_url)
 
             self._login()
             self._post_message(post_text, post_image)
@@ -106,14 +103,19 @@ class FaceBookApi:
         self.driver.get(self.config["fb_page"])
         time.sleep(2)
 
-        accept_cookie = self.driver.find_elements(By.XPATH, "//div[@aria-label='Разрешить все cookie']")
+        accept_cookie = self.driver.find_elements(By.XPATH,
+                                                  "//div[@aria-label='Разрешить все cookie']") or self.driver.find_elements(
+            By.XPATH, "//div[@aria-label='Allow all cookies']")
         if accept_cookie:
             logger.debug("FB: Found cookie. Accept it")
             self.driver.save_screenshot(os.path.join(self.wd, "AcceptCookie.png"))
             accept_cookie[1].click()
         time.sleep(2)
 
-        not_authed = self.driver.find_elements(By.XPATH, "//div[@aria-label='Создать новый аккаунт']")
+        not_authed = self.driver.find_elements(By.XPATH,
+                                               "//div[@aria-label='Создать новый аккаунт']") or self.driver.find_elements(
+            By.XPATH, "//div[@aria-label='Create new account']")
+
         if not_authed:
             logger.debug("FB: Not authed. Login...")
 
@@ -133,12 +135,13 @@ class FaceBookApi:
             self.driver.save_screenshot(os.path.join(self.wd, "Login.png"))
 
             time.sleep(1)
-            enter = self.driver.find_element(By.XPATH, "//div[@aria-label='Войти на Facebook']")
+            enter = self.driver.find_elements(By.XPATH,
+                                              "//div[@aria-label='Войти на Facebook']") or self.driver.find_elements(
+                By.XPATH, "//div[@aria-label='Log in to Facebook']")
             if enter:
-                enter.click()
+                enter[0].click()
 
             time.sleep(15)
-
 
         switch = self.driver.find_elements(By.XPATH, "//span[.='Переключиться']")
         if switch:
@@ -148,14 +151,13 @@ class FaceBookApi:
 
         logger.debug("FB: Log in Finish")
 
-
     def _post_message(self, msg, image_url):
         image_file = os.path.abspath(os.path.join(self.wd, "%s.jpg" % uuid.uuid4()))
         logger.debug("FB: post message. Temp image -> %s", image_file)
         try:
             io.download_file(image_url, image_file)
-            self._start_post()
-            self._make_post_body(msg, image_file)
+            self._start_post(image_file)
+            self._make_post_body(msg)
             self._finish_post()
             os.remove(image_file)
             logger.debug("FB: post message success")
@@ -171,7 +173,7 @@ class FaceBookApi:
             time.sleep(5)
 
             comment_area = self.driver.find_element(By.XPATH, xpath_comment_body)
-            comment_area.click()
+            # comment_area.click()
             time.sleep(2)
             self.driver.save_screenshot(os.path.join(self.wd, "CommentStart.png"))
             for t in text:
@@ -185,29 +187,29 @@ class FaceBookApi:
             logger.exception("FB: Post comment Failed!!", e)
             raise e
 
-    def _start_post(self):
+    def _start_post(self, image):
         self.driver.find_elements(By.XPATH, "//span[.='Фото/видео']")[0].click()
-        time.sleep(5)
+        time.sleep(1)
+        input = self.driver.find_element(By.CSS_SELECTOR,
+                                         "input[accept='image/*,image/heif,image/heic,video/*,video/mp4,video/x-m4v,video/x-matroska,.mkv']")
+        input.send_keys(image)
+        time.sleep(10)
         self.driver.save_screenshot(os.path.join(self.wd, "PostStart.png"))
 
-    def _make_post_body(self, msg, image):
+    def _make_post_body(self, msg):
         text_area = self.driver.find_element(By.XPATH, xpath_post_body)
         text_area.click()
         time.sleep(2)
         for m in msg:
             text_area.send_keys(m)
+            time.sleep(0.05)
         time.sleep(2)
-
-        input = self.driver.find_element(By.CSS_SELECTOR,
-                                         "input[accept='image/*,image/heif,image/heic,video/*,video/mp4,video/x-m4v,video/x-matroska,.mkv']")
-        input.send_keys(image)
-        time.sleep(5)
         self.driver.save_screenshot(os.path.join(self.wd, "PostFull.png"))
 
     def _finish_post(self):
         next_btn = self.driver.find_element(By.XPATH, "//div[@aria-label='Далее']")
         next_btn.click()
-        time.sleep(3)
+        time.sleep(15)
 
         post_btn = self.driver.find_element(By.XPATH, "//div[@aria-label='Опубликовать']")
         post_btn.click()
@@ -219,3 +221,25 @@ class FaceBookApi:
             dont_now[0].click()
             self.driver.save_screenshot(os.path.join(self.wd, "DontNowClick.png"))
             time.sleep(15)
+
+    @staticmethod
+    def _prepare_preview_text(text):
+        text_lines = text.split('\n')
+        total_lines = len(text_lines)
+
+        # Decide percentage dynamically
+        if total_lines > 100:  # big text
+            percent = 0.05
+        elif total_lines > 20:  # medium text
+            percent = 0.20
+        else:  # very small text — show all
+            percent = 1.0
+
+        num_lines_to_keep = max(1, int(total_lines * percent))
+        lines_to_keep = text_lines[:num_lines_to_keep]
+
+        # Add ellipsis if text was trimmed
+        if num_lines_to_keep < total_lines:
+            lines_to_keep.append("…")
+
+        return '\n'.join(lines_to_keep)
