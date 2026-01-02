@@ -7,7 +7,6 @@ from src.tools import parse_args, init_logger, read_configs
 
 logger = logging.getLogger(__name__)
 
-HEADLESS = False
 POST_COUNT = 1
 
 def debug():
@@ -31,27 +30,27 @@ def main():
     app_database = SQLiteDatabase(app_wd, app_config["general"]["database"])
 
     if app_args.links:
-        process_updater(app_args, app_database, app_config, links=app_args.links.split(","))
+        process_updater(app_args, app_database, app_config["general"], links=app_args.links.split(","))
     elif app_args.sites:
-        process_updater(app_args, app_database, app_config, sites=app_args.sites.split(","))
+        process_updater(app_args, app_database, app_config["general"], sites=app_args.sites.split(","))
     else:
         logger.info("Updater is not enabled. No -s/--sites -l/--links arguments provided")
 
     if app_args.xmlrpc:
-        process_rpc(app_database, app_config, count=POST_COUNT)
+        process_rpc(app_database, app_config["xml_rpc"], count=POST_COUNT)
     else:
-        logger.info("RPC Is not enabled")
+        logger.info("RPC Is not enabled. No -x arguments provided")
 
     published = None
     if app_args.facebook:
-        published = process_facebook(app_database, app_wd, app_config)
+        published = process_facebook(app_database, app_wd, app_config["facebook"])
     else:
-        logger.info("Facebook is not enabled")
+        logger.info("Facebook is not enabled. No -f arguments provided")
 
     if app_args.telegram:
-        process_telega(app_config, published)
+        process_telega(app_config["telegram"], published)
     else:
-        logger.info("Telegram is not enabled")
+        logger.info("Telegram is not enabled. No -t argument provided")
 
 
 if __name__ == "__main__":
@@ -60,5 +59,6 @@ if __name__ == "__main__":
         main()
     except BaseException as e:
         logger.error("Error during automation, %s", e)
+
     logger.info("------------- Finish Vetalll Auto -------------\n")
     exit(0)

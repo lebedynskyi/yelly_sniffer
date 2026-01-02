@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 
 from src import io
-from src.api.web_driver import uc_chrome_driver, chrome_driver
+from src.api.web_driver import chrome_driver, firefox_driver
 from src.models import PostContent, PostMeta
 
 from selenium.webdriver.common.by import By
@@ -166,75 +166,6 @@ class CrykamiParser(Parser):
         return PostContent(post_title, content.renderContents(prettyPrint=True).decode("utf8"), post_url, feature_image)
 
 
-class UkrainnParser(Parser):
-    def get_posts_meta(self, site_url):
-        page = io.do_get(site_url)
-        parser = BeautifulSoup(page, 'html.parser')
-
-        posts = parser.find_all("header", {'class': 'entry-header'})
-        post_urls = [PostMeta(p.find("h3").get_text(strip=True), p.find("a").get("href")) for p in posts]
-        return post_urls
-
-    def get_post_content(self, post_url):
-        post = io.do_get(post_url)
-        parser = BeautifulSoup(post, 'html.parser')
-
-        post_title = parser.find("h3", {"class": "single-title"}).get_text(strip=True)
-        content = parser.find("div", {"class": "entry-content"})
-
-        # Add some clean ip of content
-        for ins in content.find_all("ins", {'class': 'adsbygoogle'}):
-            ins.decompose()
-
-        for ins in content.find_all("div", {'class': 'b-r--before_content'}):
-            ins.decompose()
-
-        for ins in content.find_all("div", {'class': 'b-r--after_content'}):
-            ins.decompose()
-
-        for ins in content.find_all("div", {'class': 'nodesktop'}):
-            ins.decompose()
-
-        for ins in content.find_all("div", {"id": re.compile("^yandex")}):
-            ins.decompose()
-
-        for ins in content.find_all("div", {'class': 'ads'}):
-            ins.decompose()
-
-        for ins in content.find_all("div", {'class': 'nomobile'}):
-            ins.decompose()
-
-        for ins in content.find_all("div", {'class': 'r-bl'}):
-            ins.decompose()
-
-        for ins in content.find_all("script"):
-            ins.decompose()
-
-        for ins in content.find_all("style"):
-            ins.decompose()
-
-        for ins in content.find_all("center"):
-            ins.decompose()
-
-        for ins in content.find_all("div", {'class': 'panel'}):
-            ins.name = "p"
-
-        feature_image = None
-        for img in content.find_all("img"):
-            feature_image = img["src"]
-            img["alt"] = post_title
-            try:
-                img["class"].append("aligncenter")
-                img["class"].append("size-full")
-            except:
-                img["class"] = "aligncenter size-full"
-
-            img["sizes"] = None
-            img["srcset"] = None
-
-        return PostContent(post_title, content.renderContents(prettyPrint=True).decode("utf8"), post_url, feature_image)
-
-
 class HappyTimesParser(Parser):
     def get_posts_meta(self, site_url):
         page = io.do_get(site_url)
@@ -372,7 +303,7 @@ class DzenRuParser(Parser):
 
     def init_driver(self):
         if not self._driver:
-            self._driver = chrome_driver()
+            self._driver = firefox_driver()
 
 
 if __name__ == "__main__":

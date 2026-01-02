@@ -1,7 +1,9 @@
 import logging
+import xmlrpc.client
 
 from wordpress_xmlrpc import Client, WordPressPost
 from wordpress_xmlrpc.methods import posts as wp_posts_api
+from wordpress_xmlrpc.methods.media import UploadFile
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +46,9 @@ class RpcApi:
             wp_post.content = entity.orig_content
             wp_post.post_status = "publish"
 
-            # with open(p.image, 'rb') as img:
-            #     data = {'name': 'picture.jpg', 'type': 'image/jpeg', 'bits': xmlrpc_client.Binary(img.read())}
-            #     uploaded_image = wp.call(wp_media_api.UploadFile(data))
+            # with open(entity.image, 'rb') as img:
+            #     data = {'name': 'picture.jpg', 'type': 'image/jpeg', 'bits': xmlrpc.client.Binary(img.read())}
+            #     uploaded_image = wp.call(UploadFile(data))
             #     wp_post.thumbnail = uploaded_image['id']
 
             post_id = wp.call(wp_posts_api.NewPost(wp_post))

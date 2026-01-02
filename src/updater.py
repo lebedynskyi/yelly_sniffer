@@ -3,13 +3,14 @@ import random
 import urllib
 from collections.abc import Iterable
 
-from src.api.parsers import CrykamiParser, YellyParser, UkrainnParser, HappyTimesParser, DzenRuParser
+from src.api.parsers import CrykamiParser, YellyParser, HappyTimesParser, DzenRuParser
 
 logger = logging.getLogger(__name__)
 
+DB_UPDATE_COUNT = 2
+
 _parsers = {
     "cpykami.ru": CrykamiParser(),
-    "ukrainn.site": UkrainnParser(),
     "happytimes.info": HappyTimesParser(),
     "dzen.ru": DzenRuParser()
 }
@@ -79,7 +80,7 @@ class DatabaseUpdater:
             if not self.database.exist(meta.title):
                 count = count + self._check_update_for_meta(meta)
 
-            if count == 2:
+            if count == DB_UPDATE_COUNT:
                 break
 
         return count

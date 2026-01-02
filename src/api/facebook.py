@@ -9,7 +9,7 @@ from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 from src import io
-from src.api.web_driver import uc_chrome_driver, chrome_driver
+from src.api.web_driver import chrome_driver, firefox_driver
 
 selector_post_start = "div.xi81zsa"
 xpath_post_body = "//div[@aria-placeholder='Что у вас нового?']"
@@ -57,7 +57,7 @@ class FaceBookApi:
         self.config = config
         self.database = database
         self.wd = wd
-        self.driver = chrome_driver()
+        self.driver = firefox_driver()
 
     def publish(self):
         logger.info("Facebook Publish start")
@@ -142,6 +142,9 @@ class FaceBookApi:
                 enter[0].click()
 
             time.sleep(15)
+            logger.debug("FB: Log in Finish")
+        else:
+            logger.debug("FB: Already logged in")
 
         switch = self.driver.find_elements(By.XPATH, "//span[.='Переключиться']")
         if switch:
@@ -149,7 +152,6 @@ class FaceBookApi:
             switch[3].click()
             time.sleep(5)
 
-        logger.debug("FB: Log in Finish")
 
     def _post_message(self, msg, image_url):
         image_file = os.path.abspath(os.path.join(self.wd, "%s.jpg" % uuid.uuid4()))

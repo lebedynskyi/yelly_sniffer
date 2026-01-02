@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def process_updater(args, database, config, links=None, sites=None):
-    db_updater = DatabaseUpdater(database, config["general"])
+    db_updater = DatabaseUpdater(database, config)
 
     if args.links:
         db_updater.process_links(links)
@@ -21,7 +21,7 @@ def process_updater(args, database, config, links=None, sites=None):
 
 def process_rpc(database, config, count):
     try:
-        rpc = RpcApi(database, config["xml_rpc"])
+        rpc = RpcApi(database, config)
         return rpc.publish(count)
     except BaseException as e:
         logger.exception("Unable to publish by rpc", e)
@@ -29,14 +29,14 @@ def process_rpc(database, config, count):
 
 def process_facebook(database, directory, config):
     try:
-        fb = FaceBookApi(database, directory, config["facebook"])
+        fb = FaceBookApi(database, directory, config)
         return fb.publish()
     except BaseException as e:
         logger.exception("Unable to publish by facebook", e)
 
 
 def process_telega(config, data):
-    telega = TelegramApi(config["telegram"])
+    telega = TelegramApi(config)
 
     if data is PostEntity:
         telega.send_success(data.title, data.own_url)
