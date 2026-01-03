@@ -201,11 +201,11 @@ class FaceBookApi:
     def _make_post_body(self, msg):
         text_area = self.driver.find_element(By.XPATH, xpath_post_body)
         text_area.click()
-        time.sleep(2)
+        time.sleep(5)
         for m in msg:
             text_area.send_keys(m)
             time.sleep(0.05)
-        time.sleep(2)
+        time.sleep(5)
         self.driver.save_screenshot(os.path.join(self.wd, "PostFull.png"))
 
     def _finish_post(self):

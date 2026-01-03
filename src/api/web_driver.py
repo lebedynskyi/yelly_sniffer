@@ -5,9 +5,7 @@ import atexit
 import signal
 import sys
 
-from selenium.webdriver import FirefoxProfile
-
-HEADLESS = True
+HEADLESS = False
 cache_driver = None
 uc_cache_driver = None
 fire_cache_driver = None
@@ -89,23 +87,45 @@ def uc_chrome_driver():
 
 def firefox_driver():
     global fire_cache_driver
-    if not fire_cache_driver:
-        from selenium.webdriver.firefox.options import Options
+    if fire_cache_driver:
+        return fire_cache_driver
 
-        user_data_dir = os.path.abspath("output/firefoxData")
-        os.makedirs(user_data_dir, exist_ok=True)
+    from selenium import webdriver
+    from selenium.webdriver.firefox.options import Options
+    from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
+    import os
 
-        opts = Options()
-        opts.set_preference("dom.webnotifications.enabled", False)
-        opts.add_argument("--no-sandbox")
-        opts.add_argument("--disable-dev-shm-usage")
-        opts.add_argument('-profile')
-        opts.add_argument(user_data_dir)
-        if HEADLESS:
-            opts.add_argument("--headless")
+    user_data_dir = os.path.abspath("output/firefoxData")
+    os.makedirs(user_data_dir, exist_ok=True)
 
-        fire_cache_driver = webdriver.Firefox(options=opts)
-    return fire_cache_driver
+    profile = FirefoxProfile(user_data_dir)
+    profile.set_preference("dom.webnotifications.enabled", False)
+    profile.set_preference("dom.webdriver.enabled", False)
+    profile.set_preference("layers.acceleration.force-enabled", True)
+    profile.set_preference("gfx.webrender.all", True)
+    profile.set_preference("gfx.webrender.enabled", True)
+    profile.set_preference("intl.accept_languages", "en-US,en")
+    profile.set_preference("dom.max_script_run_time", 0)
+    profile.set_preference("dom.max_chrome_script_run_time", 0)
+
+    opts = Options()
+    opts.profile = profile
+
+    if HEADLESS:
+        opts.add_argument("--headless=new")
+
+    driver = webdriver.Firefox(options=opts)
+    driver.set_window_size(1920, 1080)
+
+    driver.execute_script("""
+    Object.defineProperty(navigator, 'webdriver', {
+        get: () => undefined
+    });
+    """)
+
+    fire_cache_driver = driver
+    return driver
+
 
 
 atexit.register(cleanup_drivers)  # normal exit

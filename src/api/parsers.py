@@ -249,18 +249,18 @@ class DzenRuParser(Parser):
         self._driver.maximize_window()
         self._driver.get(site_url)
         time.sleep(3)
-        posts = self._driver.find_elements(By.TAG_NAME, "article")
+        posts = self._driver.find_elements(By.CSS_SELECTOR,'article[data-card-type="card-article"]')
         posts_meta = []
         for p in posts:
             a_href = p.find_elements(By.TAG_NAME, "a")[0]
-            posts_meta.append(PostMeta(a_href.text, a_href.get_attribute("href")))
+            posts_meta.append(PostMeta(p.text, a_href.get_attribute("href")))
         return posts_meta
 
     def get_post_content(self, post_url):
         self.init_driver()
         self._driver.get(post_url)
         time.sleep(3)
-        post = self._driver.find_element(By.CLASS_NAME, "content--article-item-content__content-1S")
+        post = self._driver.find_element(By.CSS_SELECTOR,'[class^="content--article-item-content_"]')
         post_title = post.find_element(By.TAG_NAME, "h1").text
 
         content = post.find_element(By.CLASS_NAME, "content--article-render__container-1k")

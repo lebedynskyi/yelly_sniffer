@@ -8,6 +8,8 @@ from src.tools import parse_args, init_logger, read_configs
 logger = logging.getLogger(__name__)
 
 POST_COUNT = 1
+RETRY_COUNT = 1
+
 
 def debug():
     args = parse_args()
@@ -54,11 +56,15 @@ def main():
 
 
 if __name__ == "__main__":
-    print("------------- Welcome to Vetalll Auto -------------")
-    try:
-        main()
-    except BaseException as e:
-        logger.error("Error during automation, %s", e)
+    print("------------- Welcome to FB Auto -------------")
+    counter = 0
+    while counter < RETRY_COUNT:
+        try:
+            logger.info(f"------------- FB Auto Retry {counter} -------------\n")
+            main()
+        except BaseException as e:
+            logger.error("Error during automation, %s", e)
+            counter = counter + 1
 
-    logger.info("------------- Finish Vetalll Auto -------------\n")
-    exit(0)
+    logger.info(f"------------- FB Auto Finish -------------\n")
+    exit()

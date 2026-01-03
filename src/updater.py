@@ -38,7 +38,8 @@ class DatabaseUpdater:
         if not isinstance(sites, Iterable):
             sites = [sites]
 
-        # TODO redesign to work page by page ??
+        sites = [random.choice(sites)]
+
         logger.info("Fetching metadata for sites '%s'", sites)
         post_metas = []
         for s in sites:
