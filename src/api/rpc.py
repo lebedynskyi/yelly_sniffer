@@ -1,9 +1,7 @@
 import logging
-import xmlrpc.client
 
 from wordpress_xmlrpc import Client, WordPressPost
 from wordpress_xmlrpc.methods import posts as wp_posts_api
-from wordpress_xmlrpc.methods.media import UploadFile
 
 logger = logging.getLogger(__name__)
 

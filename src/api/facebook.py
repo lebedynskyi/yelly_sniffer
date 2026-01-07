@@ -232,10 +232,10 @@ class FaceBookApi:
         # Decide percentage dynamically
         if total_lines > 100:  # big text
             percent = 0.05
-        elif total_lines > 20:  # medium text
-            percent = 0.20
+        elif total_lines > 30:  # medium text
+            percent = 0.25
         else:  # very small text — show all
-            percent = 1.0
+            percent = 0.80
 
         num_lines_to_keep = max(1, int(total_lines * percent))
         lines_to_keep = text_lines[:num_lines_to_keep]
