@@ -50,47 +50,48 @@ class DatabaseUpdater:
         logger.info("Fetched %s metas for sites %s", len(post_metas), sites)
         random.shuffle(post_metas)
 
-        count = self._check_update(post_metas)
-        if count > 0:
-            logger.info("Updater saved %s new titles", count)
+        post_ids = self._check_update(post_metas)
+        if len(post_ids) > 0:
+            logger.info("Updater saved %s new titles", len(post_ids))
         else:
             logger.info("Updater everything is up to date")
-        return count
+        return post_ids
 
     def process_links(self, links):
         if not isinstance(links, Iterable):
             links = [links]
 
-        count = 0
+        post_ids = []
         for link in links:
             parser = get_parser_for_site(link)
-            content = parser.get_post_content(link)
-            if not self.database.exist(content.title):
-                self.database.insert_new_post(content)
-                count = count + 1
+            post = parser.get_post_content(link)
+            if not self.database.exist(post.title):
+                post_id = self.database.insert_new_post(post)
+                post_ids.append(post_id)
 
-        if count > 0:
-            logger.info("Updater saved %s new titles", count)
+        if len(post_ids) > 0:
+            logger.info("Updater saved %s new titles", len(post_ids))
         else:
             logger.info("Updater everything is up to date")
-        return count
+        return post_ids
 
     def _check_update(self, post_metas):
-        count = 0
+        post_ids = []
         for meta in post_metas:
             if not self.database.exist(meta.title):
-                count = count + self._check_update_for_meta(meta)
+                saved_ids = self._check_update_for_meta(meta)
+                post_ids += saved_ids
 
-            if count == DB_UPDATE_COUNT:
+            if len(post_ids) == DB_UPDATE_COUNT:
                 break
 
-        return count
+        return post_ids
 
     def _check_update_for_meta(self, meta):
         if not self.database.exist(meta.title):
             logger.info("Fetch %s", meta.title)
             parser = get_parser_for_site(meta.url)
             content = parser.get_post_content(meta.url)
-            self.database.insert_new_post(content)
-            return 1
-        return 0
+            post_ids = self.database.insert_new_post(content)
+            return post_ids
+        return None

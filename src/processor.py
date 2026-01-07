@@ -13,24 +13,25 @@ def process_updater(args, database, config, links=None, sites=None):
     db_updater = DatabaseUpdater(database, config)
 
     if args.links:
-        db_updater.process_links(links)
+        return db_updater.process_links(links)
+    elif args.sites:
+        return db_updater.process_sites(sites)
+    else:
+        return None
 
-    if args.sites:
-        db_updater.process_sites(sites)
 
-
-def process_rpc(database, config, count):
+def process_rpc(database, config, post_ids):
     try:
         rpc = RpcApi(database, config)
-        return rpc.publish(count)
+        return rpc.publish(post_ids)
     except BaseException as e:
         logger.exception("Unable to publish by rpc", e)
 
 
-def process_facebook(database, directory, config):
+def process_facebook(database, directory, config, post_ids):
     try:
         fb = FaceBookApi(database, directory, config)
-        return fb.publish()
+        return fb.publish(post_ids)
     except BaseException as e:
         logger.exception("Unable to publish by facebook", e)
 

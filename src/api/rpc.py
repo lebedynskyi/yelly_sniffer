@@ -11,24 +11,11 @@ class RpcApi:
         self.database = database
         self.config = config
 
-    def publish(self, count):
-        entities = self.database.find_by_rpc_status(False)
+    def publish(self, post_ids):
+        entities = self.database.find_with_rpc_status(post_ids, False)
 
         if not entities:
-            logger.debug("RPC everything is up to date")
-            return
-
-        for i in range(0, len(entities)):
-            if i == count:
-                break
-
-            entity = entities[i]
-            self._publish_one(entity)
-
-    def publish_all(self):
-        entities = self.database.find_by_rpc_status(False)
-        if not entities:
-            logger.debug("RPC everything is up to date")
+            logger.debug("RPC No posts found or everything is up to date")
             return
 
         for entity in entities:

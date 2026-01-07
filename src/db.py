@@ -27,24 +27,34 @@ class SQLiteDatabase:
         if not isinstance(posts, Iterable):
             posts = [posts]
 
-        data = ((p.title, p.body, p.orig_url, p.image, datetime.now()) for p in posts)
-        cursor.executemany("INSERT INTO posts(title, orig_content, orig_url, thumbnail, date) VALUES (?,?,?,?,?)", data)
+        ids = []
+
+        for p in posts:
+            cursor.execute(
+                "INSERT INTO posts(title, orig_content, orig_url, thumbnail, date) VALUES (?,?,?,?,?)",
+                (p.title, p.body, p.orig_url, p.image, datetime.now())
+            )
+            ids.append(cursor.lastrowid)
+
         self.connection.commit()
+        return ids
 
     def exist(self, title):
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM posts where title=?", (title,))
         return cursor.fetchone() is not None
 
-    def find_by_rpc_status(self, status):
+    def find_with_rpc_status(self, post_ids, rpc_status):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM posts where rpc_publish=? ORDER BY date DESC", (status,))
+        placeholders = ",".join("?" for _ in post_ids)
+        cursor.execute(f"SELECT * FROM posts where rpc_publish=? AND id IN ({placeholders}) ORDER BY date DESC", (rpc_status, *post_ids))
         res = cursor.fetchall()
         return [PostEntity(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8]) for r in res]
 
-    def find_by_fb_status(self, fb_status, rpc_status=True):
+    def find_with_fb_status(self, fb_status, rpc_status, post_ids):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM posts where fb_publish=? AND rpc_publish=? ORDER BY date DESC", (fb_status, rpc_status))
+        placeholders = ",".join("?" for _ in post_ids)
+        cursor.execute(f"SELECT * FROM posts where fb_publish=? AND rpc_publish=? AND id IN ({placeholders}) ORDER BY date DESC", (fb_status, rpc_status, *post_ids))
         res = cursor.fetchall()
         return [PostEntity(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8]) for r in res]
 

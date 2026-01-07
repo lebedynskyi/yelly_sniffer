@@ -3,6 +3,8 @@
 MIN=0   # 0 minutes
 MAX=900   # 15 minutes
 
+killall -9 firefox >/dev/null 2>&1 || true
+
 set -e
 cd /Users/vitalii.lebedynskyi/Projects/yelly_sniffer || exit 1
 

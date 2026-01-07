@@ -31,21 +31,22 @@ def main():
     app_config = read_configs(app_wd)
     app_database = SQLiteDatabase(app_wd, app_config["general"]["database"])
 
+    post_ids = None
     if app_args.links:
-        process_updater(app_args, app_database, app_config["general"], links=app_args.links.split(","))
+        post_ids = process_updater(app_args, app_database, app_config["general"], links=app_args.links.split(","))
     elif app_args.sites:
-        process_updater(app_args, app_database, app_config["general"], sites=app_args.sites.split(","))
+        post_ids = process_updater(app_args, app_database, app_config["general"], sites=app_args.sites.split(","))
     else:
         logger.info("Updater is not enabled. No -s/--sites -l/--links arguments provided")
 
-    if app_args.xmlrpc:
-        process_rpc(app_database, app_config["xml_rpc"], count=POST_COUNT)
+    if app_args.xmlrpc and post_ids:
+        process_rpc(app_database, app_config["xml_rpc"], post_ids)
     else:
         logger.info("RPC Is not enabled. No -x arguments provided")
 
     published = None
     if app_args.facebook:
-        published = process_facebook(app_database, app_wd, app_config["facebook"])
+        published = process_facebook(app_database, app_wd, app_config["facebook"], post_ids)
     else:
         logger.info("Facebook is not enabled. No -f arguments provided")
 

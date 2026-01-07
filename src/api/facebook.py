@@ -59,11 +59,11 @@ class FaceBookApi:
         self.wd = wd
         self.driver = firefox_driver()
 
-    def publish(self):
+    def publish(self, post_ids):
         logger.info("Facebook Publish start")
         # TODO repeat process with loop of entities?
 
-        to_publish_posts = self.database.find_by_fb_status(False, True)
+        to_publish_posts = self.database.find_with_fb_status(False, True, post_ids)
 
         if not to_publish_posts:
             logger.info("Facebook everything is up to date")
@@ -84,7 +84,6 @@ class FaceBookApi:
             self._login()
             self._post_message(post_text, post_image)
             self._post_comment(post_comment)
-            self.database.update_fb_status(to_publish.local_id, True)
             self.database.save_last_fb_publish_date()
             logger.info("Facebook published post '%s'", to_publish.title)
             self.quit()
@@ -94,6 +93,8 @@ class FaceBookApi:
             self.driver.save_screenshot(os.path.join(self.wd, "Error.png"))
             self.quit()
             raise e
+        finally:
+            self.database.update_fb_status(to_publish.local_id, True)
 
     def quit(self):
         self.driver.quit()
