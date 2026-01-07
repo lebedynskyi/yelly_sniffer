@@ -9,7 +9,7 @@ from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 from src import io
-from src.api.web_driver import chrome_driver, firefox_driver
+from src.api.web_driver import default_driver
 
 selector_post_start = "div.xi81zsa"
 xpath_post_body = "//div[@aria-placeholder='Что у вас нового?']"
@@ -57,7 +57,7 @@ class FaceBookApi:
         self.config = config
         self.database = database
         self.wd = wd
-        self.driver = firefox_driver()
+        self.driver = default_driver()
 
     def publish(self):
         logger.info("Facebook Publish start")

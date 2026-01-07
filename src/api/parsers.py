@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 
 from src import io
-from src.api.web_driver import chrome_driver, firefox_driver
+from src.api.web_driver import default_driver
 from src.models import PostContent, PostMeta
 
 from selenium.webdriver.common.by import By
@@ -303,7 +303,7 @@ class DzenRuParser(Parser):
 
     def init_driver(self):
         if not self._driver:
-            self._driver = firefox_driver()
+            self._driver = default_driver()
 
 
 if __name__ == "__main__":

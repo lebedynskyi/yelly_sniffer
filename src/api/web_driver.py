@@ -5,7 +5,7 @@ import atexit
 import signal
 import sys
 
-HEADLESS = False
+HEADLESS = True
 cache_driver = None
 uc_cache_driver = None
 fire_cache_driver = None
@@ -20,18 +20,21 @@ def cleanup_drivers():
     try:
         if cache_driver and hasattr(cache_driver, "quit"):
             cache_driver.quit()
+            cache_driver = None
     except:
         pass
 
     try:
         if uc_cache_driver and hasattr(uc_cache_driver, "quit"):
             uc_cache_driver.quit()
+            uc_cache_driver = None
     except:
         pass
 
     try:
         if fire_cache_driver and hasattr(fire_cache_driver, "quit"):
             fire_cache_driver.quit()
+            fire_cache_driver = None
     except:
         pass
 
@@ -40,6 +43,8 @@ def handle_exit(signum, frame):
     cleanup_drivers()
     sys.exit(0)
 
+def default_driver():
+    return uc_chrome_driver()
 
 def chrome_driver():
     from selenium.webdriver.chrome.options import Options
