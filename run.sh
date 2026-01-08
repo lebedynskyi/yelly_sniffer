@@ -6,8 +6,8 @@ MAX=900   # 15 minutes
 set -e
 cd /Users/vitalii.lebedynskyi/Projects/yelly_sniffer || exit 1
 
-DELAY=$(( RANDOM % (0 - MIN + 1) + MIN ))
+DELAY=$(( RANDOM % (MAX - MIN + 1) + MIN ))
 sleep "$DELAY"
 
 source .venv/bin/activate
-python main.py -x -f -s https://dzen.ru/eg_moi_istorii,https://dzen.ru/id/622ce7c8811d761462ef111a,https://dzen.ru/id/5aa3c26577d0e63329b9eaf3,https://dzen.ru/verynevery
+python main.py -x -f -s https://dzen.ru/eg_moi_istorii,https://dzen.ru/id/622ce7c8811d761462ef111a,https://dzen.ru/verynevery

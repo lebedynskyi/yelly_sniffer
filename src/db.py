@@ -60,13 +60,6 @@ class SQLiteDatabase:
                        (fb_status, local_id))
         self.connection.commit()
 
-    def create_database(self):
-        self.connection = sqlite3.connect(self.db_file)
-        cursor = self.connection.cursor()
-        cursor.execute(
-            "CREATE TABLE posts(id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER, title TEXT, orig_content TEXT, orig_url TEXT, own_url TEXT, thumbnail TEXT, fb_publish INTEGER DEFAULT 0, rpc_publish INTEGER DEFAULT 0)")
-        self.connection.commit()
-
     def get_last_fb_publish_date(self):
         with open(os.path.join(self.wd, "last_fb.date.txt"), 'r') as file:
             return datetime.strptime(file.read(), "%d-%b-%Y (%H:%M:%S.%f)")
@@ -74,6 +67,13 @@ class SQLiteDatabase:
     def save_last_fb_publish_date(self):
         with open(os.path.join(self.wd, "last_fb.date.txt"), 'w') as file:
             file.write(datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)"))
+
+    def create_database(self):
+        self.connection = sqlite3.connect(self.db_file)
+        cursor = self.connection.cursor()
+        cursor.execute(
+            "CREATE TABLE posts(id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER, title TEXT, orig_content TEXT, orig_url TEXT, own_url TEXT, thumbnail TEXT, fb_publish INTEGER DEFAULT 0, rpc_publish INTEGER DEFAULT 0)")
+        self.connection.commit()
 
     def connect_to_db(self):
         self.connection = sqlite3.connect(self.db_file)

@@ -7,7 +7,7 @@ from src.api.parsers import CrykamiParser, YellyParser, HappyTimesParser, DzenRu
 
 logger = logging.getLogger(__name__)
 
-DB_UPDATE_COUNT = 1
+DB_UPDATE_COUNT = 2
 
 _parsers = {
     "cpykami.ru": CrykamiParser(),

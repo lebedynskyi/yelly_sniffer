@@ -253,7 +253,12 @@ class DzenRuParser(Parser):
         posts_meta = []
         for p in posts:
             a_href = p.find_elements(By.TAG_NAME, "a")[0]
-            posts_meta.append(PostMeta(p.text, a_href.get_attribute("href")))
+            title_divs = p.find_elements(By.CSS_SELECTOR, 'div[data-testid="card-part-title"')
+            if title_divs:
+                title = title_divs[0].text
+            else:
+                title = p.text
+            posts_meta.append(PostMeta(title, a_href.get_attribute("href")))
         return posts_meta
 
     def get_post_content(self, post_url):
