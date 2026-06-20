@@ -5,7 +5,7 @@ requests==2.32.5
 # Html processing
 playwright==1.57.0
 beautifulsoup4==4.14.3
-bleach==6.3.0
+bleach==6.4.0
 
 # Ai
 llama-cpp-python==0.3.16
