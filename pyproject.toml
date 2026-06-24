@@ -1,0 +1,11 @@
+[project]
+name = "scraper"
+version = "0.1.0"
+description = "Multi-site article scraper that fixes and republishes content to WordPress and Facebook."
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

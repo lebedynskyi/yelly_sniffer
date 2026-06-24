@@ -1,8 +1,10 @@
-.idea
-output
-venv
-profiles
-
+.venv/
+__pycache__/
 *.pyc
-__pycache__
-.DS_Store
+.pytest_cache/
+*.sqlite
+*.sqlite-journal
+.env
+*.log
+*.log.*
+.idea/

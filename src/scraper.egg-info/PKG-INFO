@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: scraper
+Version: 0.1.0
+Summary: Multi-site article scraper that fixes and republishes content to WordPress and Facebook.
+Requires-Python: >=3.11

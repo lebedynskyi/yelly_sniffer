@@ -1,13 +1,9 @@
-#!/bin/bash
-# random delay between 5 and 10 minutes
-MIN=0   # 0 minutes
-MAX=900   # 15 minutes
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
-cd /Users/vitalii.lebedynskyi/Projects/yelly_sniffer || exit 1
+cd "$(dirname "$0")"
 
-DELAY=$(( RANDOM % (MAX - MIN + 1) + MIN ))
+DELAY=$(( (RANDOM % 601) + 300 ))   # random 300-900s = 5-15 min
 sleep "$DELAY"
 
-source .venv/bin/activate
-python main.py -x -f -s https://dzen.ru/eg_moi_istorii,https://dzen.ru/historygothy,https://dzen.ru/id/622ce7c8811d761462ef111a,https://dzen.ru/verynevery
+exec .venv/bin/python src/scraper/cli.py --scrape --xmlrpc --facebook

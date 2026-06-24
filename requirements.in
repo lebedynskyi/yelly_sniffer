@@ -1,0 +1,11 @@
+requests
+playwright
+beautifulsoup4
+bleach
+python-wordpress-xmlrpc
+facebook-business
+google-genai
+openai
+python-dotenv
+pydantic-settings
+PyYAML
