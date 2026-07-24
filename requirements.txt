@@ -82,7 +82,7 @@ propcache==0.5.2
     # via
     #   aiohttp
     #   yarl
-pyasn1==0.6.3
+pyasn1==0.6.4
     # via pyasn1-modules
 pyasn1-modules==0.4.2
     # via google-auth
@@ -130,6 +130,9 @@ tqdm==4.68.3
     # via openai
 typing-extensions==4.15.0
     # via
+    #   aiohttp
+    #   aiosignal
+    #   anyio
     #   beautifulsoup4
     #   google-genai
     #   openai
