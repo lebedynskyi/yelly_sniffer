@@ -34,7 +34,7 @@ cffi==2.0.0
     # via cryptography
 charset-normalizer==3.4.7
     # via requests
-cryptography==49.0.0
+cryptography==50.0.0
     # via google-auth
 curlify==3.0.0
     # via facebook-business
@@ -130,6 +130,9 @@ tqdm==4.68.3
     # via openai
 typing-extensions==4.15.0
     # via
+    #   aiohttp
+    #   aiosignal
+    #   anyio
     #   beautifulsoup4
     #   google-genai
     #   openai
