@@ -12,7 +12,7 @@ aiosignal==1.4.0
     # via aiohttp
 annotated-types==0.7.0
     # via pydantic
-anyio==4.14.0
+anyio==4.14.2
     # via
     #   google-genai
     #   httpx
@@ -130,6 +130,9 @@ tqdm==4.68.3
     # via openai
 typing-extensions==4.15.0
     # via
+    #   aiohttp
+    #   aiosignal
+    #   anyio
     #   beautifulsoup4
     #   google-genai
     #   openai
