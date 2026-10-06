@@ -130,6 +130,9 @@ tqdm==4.68.3
     # via openai
 typing-extensions==4.15.0
     # via
+    #   aiohttp
+    #   aiosignal
+    #   anyio
     #   beautifulsoup4
     #   google-genai
     #   openai
@@ -141,7 +144,7 @@ typing-inspection==0.4.2
     # via
     #   pydantic
     #   pydantic-settings
-urllib3==2.7.0
+urllib3==2.8.0
     # via requests
 webencodings==0.5.1
     # via bleach
